@@ -8,7 +8,7 @@
 # ============================================
 
 export PATH="$HOME/.local/bin:$PATH"
-# Add CUDA libraries from venv
+# Add CUDA libraries from venv (cho cả TTS và Whisper)
 export LD_LIBRARY_PATH=/root/VieNeu-TTS/.venv/lib/python3.12/site-packages/nvidia/cublas/lib:$LD_LIBRARY_PATH
 
 # Fix timezone
