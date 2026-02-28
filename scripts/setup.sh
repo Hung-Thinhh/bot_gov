@@ -41,6 +41,7 @@ uv pip install fastapi "uvicorn[standard]"
 
 # Copy API server
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -z "$SCRIPT_DIR" ]; then SCRIPT_DIR="/root/bot_gov/scripts"; fi
 cp "$SCRIPT_DIR/../tts/api_server.py" /root/VieNeu-TTS/apps/api_server.py
 
 # --- 4. Setup Whisper ---

@@ -14,8 +14,9 @@ import logging
 import tempfile
 import gradio as gr
 from faster_whisper import WhisperModel
-from fastapi import UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from typing import Optional
 
 # ---- Config ----
@@ -72,12 +73,15 @@ def transcribe_ui(audio_path, language="vi", task="transcribe"):
     lines = [f"[{s['start']:.1f}s → {s['end']:.1f}s]  {s['text']}" for s in result_segments]
     header = (
         f"🎯 Ngôn ngữ: {info.language} (xác suất: {info.language_probability:.0%})\n"
-        f"⏱️ Thời gian: {elapsed:.1f}s | Độ dài audio: {info.duration:.1f}s\n"
+        f"⏱️ Thờigian: {elapsed:.1f}s | Độ dài audio: {info.duration:.1f}s\n"
         f"{'─' * 50}\n"
     )
     return header + "\n".join(lines), " ".join(full_text)
 
 
+# ===========================================================
+# Create Gradio UI (but don't launch yet)
+# ===========================================================
 with gr.Blocks(title="Whisper STT") as ui:
     gr.Markdown("# 🎙️ Whisper Speech-to-Text")
     gr.Markdown(f"Model: **{MODEL_SIZE}** | GPU: **{DEVICE}** | Compute: **{COMPUTE_TYPE}**")
@@ -106,9 +110,13 @@ with gr.Blocks(title="Whisper STT") as ui:
 
 
 # ===========================================================
-# Mount API routes onto Gradio's FastAPI app
+# FastAPI App with API routes (defined BEFORE mounting Gradio)
 # ===========================================================
-app = ui.app
+app = FastAPI(
+    title="Whisper STT API",
+    description="Whisper Speech-to-Text API",
+    version="1.0.0",
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -167,7 +175,16 @@ async def transcribe_api(
 
 
 # ===========================================================
+# Mount Gradio UI at root path (AFTER API routes)
+# ===========================================================
+# Configure Gradio to work behind HTTPS proxy
+app = gr.mount_gradio_app(app, ui, path="/", root_path="https://whisper.dukyai.com")
+
+
+# ===========================================================
 # Main
 # ===========================================================
 if __name__ == "__main__":
-    ui.launch(server_name="0.0.0.0", server_port=PORT, root_path="https://whisper.dukyai.com")
+    import uvicorn
+    # Enable proxy headers to support HTTPS behind reverse proxy
+    uvicorn.run(app, host="0.0.0.0", port=PORT, proxy_headers=True, forwarded_allow_ips="*")

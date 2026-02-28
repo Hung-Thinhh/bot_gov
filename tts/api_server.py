@@ -41,7 +41,7 @@ from pydantic import BaseModel, Field
 # ---------------------------------------------------------------------------
 # Configuration from environment
 # ---------------------------------------------------------------------------
-BACKBONE_REPO = os.getenv("BACKBONE_REPO", "pnnbao-ump/VieNeu-TTS-0.3B")
+BACKBONE_REPO = os.getenv("BACKBONE_REPO", "pnnbao-ump/VieNeu-TTS")
 CODEC_REPO = os.getenv("CODEC_REPO", "neuphonic/distill-neucodec")
 BACKBONE_DEVICE = os.getenv("BACKBONE_DEVICE", "cuda")
 CODEC_DEVICE = os.getenv("CODEC_DEVICE", "cuda")
