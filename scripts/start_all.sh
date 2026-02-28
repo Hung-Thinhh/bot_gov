@@ -8,6 +8,7 @@
 # ============================================
 
 export PATH="$HOME/.local/bin:$PATH"
+# Add CUDA libraries from venv
 export LD_LIBRARY_PATH=/root/VieNeu-TTS/.venv/lib/python3.12/site-packages/nvidia/cublas/lib:$LD_LIBRARY_PATH
 
 # Fix timezone
