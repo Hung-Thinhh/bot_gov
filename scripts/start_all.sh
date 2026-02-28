@@ -59,13 +59,15 @@ fi
 echo "  [3/4] Starting TTS API (Model: VieNeu-TTS 0.5B)..."
 cd /root/VieNeu-TTS
 # Model: pnnbao-ump/VieNeu-TTS (0.5B - Maximum Quality)
-nohup uv run python apps/api_server.py > /var/log/tts_api.log 2>&1 &
+# Export LD_LIBRARY_PATH explicitly for CUDA libraries
+nohup bash -c 'export LD_LIBRARY_PATH=/root/VieNeu-TTS/.venv/lib/python3.12/site-packages/nvidia/cublas/lib:$LD_LIBRARY_PATH; uv run python apps/api_server.py' > /var/log/tts_api.log 2>&1 &
 echo "  ✅ TTS API starting on port 8000"
 
 # 4. Whisper STT
 echo "  [4/4] Starting Whisper STT..."
 cd /root/whisper-api
-nohup uv run python app.py > /var/log/whisper.log 2>&1 &
+# Export LD_LIBRARY_PATH explicitly for CUDA libraries (Whisper dùng faster-whisper cần cublas)
+nohup bash -c 'export LD_LIBRARY_PATH=/root/VieNeu-TTS/.venv/lib/python3.12/site-packages/nvidia/cublas/lib:$LD_LIBRARY_PATH; uv run python app.py' > /var/log/whisper.log 2>&1 &
 echo "  ✅ Whisper starting on port 7861"
 
 echo ""
