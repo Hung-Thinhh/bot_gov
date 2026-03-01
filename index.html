@@ -1,0 +1,2207 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trợ lý ảo - Cổng thông tin pháp luật Thuế</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0052cc;
+            --primary-dark: #003d8f;
+            --primary-light: #e6f0ff;
+            --secondary: #00a3bf;
+            --accent: #ff6b35;
+            --success: #36b37e;
+            --warning: #ffab00;
+            --error: #de350b;
+
+            --bg-primary: #f4f5f7;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f8f9fa;
+
+            --text-primary: #172b4d;
+            --text-secondary: #5e6c84;
+            --text-tertiary: #97a0af;
+
+            --border-color: #dfe1e6;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* ===== LAYOUT ===== */
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+        }
+
+        @media (min-width: 768px) {
+            .app-container {
+                max-width: 900px;
+                height: 95vh;
+                margin: 2.5vh auto;
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-lg);
+                overflow: hidden;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .app-container {
+                max-width: 1000px;
+            }
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            z-index: 100;
+        }
+
+        .header-logo {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-logo svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .header-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .header-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-subtitle {
+            font-size: 0.8rem;
+            opacity: 0.85;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            padding: 8px 16px;
+            cursor: pointer;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .mode-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .mode-toggle.voice-active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .mode-toggle svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* ===== CHAT AREA ===== */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .messages-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--bg-tertiary);
+            scroll-behavior: smooth;
+        }
+
+        .messages-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages-wrapper::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .welcome-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--primary);
+        }
+
+        .welcome-card h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .welcome-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .quick-topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .topic-chip {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: none;
+            padding: 8px 14px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .topic-chip:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ===== MESSAGES ===== */
+        .message {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .message.bot .avatar {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .message.user .avatar {
+            background: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .message-content {
+            max-width: calc(100% - 60px);
+        }
+
+        .message-bubble {
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .message.bot .message-bubble {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+            padding: 0 4px;
+        }
+
+        .message.user .message-time {
+            text-align: right;
+        }
+
+        /* Sources */
+        .sources {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .sources-title {
+            width: 100%px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sources-title svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .source-item svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--primary);
+            flex-shrink: 0;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes typingBounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0.6);
+                opacity: 0.4;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .typing-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* ===== INPUT AREA ===== */
+        .input-container {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 16px 20px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 4px 4px 4px 16px;
+            transition: var(--transition);
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .chat-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px 0;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            resize: none;
+            max-height: 120px;
+            min-height: 24px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            color: var(--text-tertiary);
+        }
+
+        .icon-btn:hover {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .icon-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .send-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .send-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* ===== FULLSCREEN VOICE MODE ===== */
+        .voice-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 40px 24px;
+        }
+
+        .voice-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('avt.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -2;
+        }
+
+        .voice-overlay::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(10, 25, 50, 0.75) 0%, rgba(20, 40, 70, 0.65) 50%, rgba(10, 25, 50, 0.75) 100%);
+            z-index: -1;
+        }
+
+        /* Main Avatar Image - Full Height */
+        .voice-main-avatar {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            height: 90vh;
+            width: auto;
+            max-width: 90vw;
+            object-fit: contain;
+            z-index: -1;
+            opacity: 0.95;
+            pointer-events: none;
+        }
+
+        @media (max-width: 480px) {
+            .voice-main-avatar {
+                height: 85vh;
+                max-width: 95vw;
+            }
+        }
+
+        .voice-overlay.active {
+            display: flex;
+        }
+
+        /* Close button at top */
+        .voice-close-top {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .voice-close-top:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .voice-close-top svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        /* Voice header */
+        .voice-header {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .voice-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .voice-header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* Voice visualizer area */
+        .voice-visualizer-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+            position: relative;
+            z-index: 5;
+        }
+
+        .voice-avatar-wrapper {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 80px;
+        }
+
+        @media (max-width: 480px) {
+            .voice-avatar-wrapper {
+                width: 50px;
+                height: 50px;
+                margin-top: 60px;
+            }
+        }
+
+        /* Animated rings */
+        .voice-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        .voice-ring:nth-child(1) {
+            width: 100px;
+            height: 100px;
+        }
+
+        .voice-ring:nth-child(2) {
+            width: 150px;
+            height: 150px;
+        }
+
+        .voice-ring:nth-child(3) {
+            width: 200px;
+            height: 200px;
+        }
+
+        @media (max-width: 480px) {
+            .voice-ring:nth-child(1) {
+                width: 30px;
+                height: 30px;
+            }
+
+            .voice-ring:nth-child(2) {
+                width: 70px;
+                height: 70px;
+            }
+
+            .voice-ring:nth-child(3) {
+                width: 100px;
+                height: 100px;
+            }
+        }
+
+        .voice-ring.animating {
+            animation: voicePulse 2.2s infinite ease-out;
+            border-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.4);
+        }
+
+        .voice-ring.animating:nth-child(2) {
+            animation-delay: 0.35s;
+        }
+
+        .voice-ring.animating:nth-child(3) {
+            animation-delay: 0.7s;
+        }
+
+        @keyframes voicePulse {
+            0% {
+                transform: scale(0.9);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* Voice Center Icon */
+        .voice-center-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 0 4px rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 480px) {
+            .voice-center-icon {
+                width: 30px;
+                height: 30px;
+            }
+        }
+
+        .voice-center-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: var(--primary);
+        }
+
+        @media (max-width: 480px) {
+            .voice-center-icon svg {
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        .voice-center-icon.recording {
+            border-color: var(--error);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 20px rgba(222, 53, 11, 0.3);
+            animation: avatarPulse 1.5s infinite;
+        }
+
+        @keyframes avatarPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .voice-center-icon.speaking {
+            border-color: var(--success);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 20px rgba(54, 179, 126, 0.3);
+        }
+
+        /* Status text */
+        .voice-status-container {
+            margin-top: 40px;
+            text-align: center;
+            min-height: 80px;
+            padding: 0 20px;
+            z-index: 10;
+        }
+
+        .voice-status {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        @media (max-width: 480px) {
+            .voice-status {
+                font-size: 1rem;
+            }
+        }
+
+        .voice-transcript {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            max-width: 90%;
+            word-wrap: break-word;
+            min-height: 28px;
+            font-style: italic;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Voice controls - 3 buttons */
+        .voice-controls {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            padding-bottom: 40px;
+            position: relative;
+            z-index: 50;
+        }
+
+        /* Test API Button */
+        .voice-btn.test-api {
+            position: absolute;
+            top: 20px;
+            right: 80px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 193, 7, 0.2);
+            border: 2px solid rgba(255, 193, 7, 0.5);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .voice-btn.test-api:hover {
+            background: rgba(255, 193, 7, 0.3);
+            border-color: rgba(255, 193, 7, 0.8);
+            transform: scale(1.05);
+        }
+
+        .voice-btn.test-api.testing {
+            background: rgba(255, 193, 7, 0.4);
+            animation: pulse 1s infinite;
+        }
+
+        .voice-btn.test-api.success {
+            background: rgba(54, 179, 126, 0.3);
+            border-color: var(--success);
+        }
+
+        .voice-btn.test-api.error {
+            background: rgba(222, 53, 11, 0.3);
+            border-color: var(--error);
+        }
+
+        .voice-btn.test-api svg {
+            width: 20px;
+            height: 20px;
+            fill: #ffc107;
+        }
+
+        .voice-btn {
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .voice-btn svg {
+            fill: white;
+        }
+
+        /* Close button */
+        .voice-btn.close {
+            width: 56px;
+            height: 56px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .voice-btn.close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .voice-btn.close svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        /* Mic button (center, larger) */
+        .voice-btn.mic {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            box-shadow: 0 8px 32px rgba(0, 163, 191, 0.5), 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .voice-btn.mic:hover {
+            transform: scale(1.08);
+            box-shadow: 0 12px 40px rgba(0, 163, 191, 0.6), 0 0 0 4px rgba(255, 255, 255, 0.15);
+        }
+
+        .voice-btn.mic.recording {
+            background: linear-gradient(135deg, var(--error), #ff4757);
+            box-shadow: 0 8px 32px rgba(222, 53, 11, 0.5), 0 0 0 4px rgba(255, 255, 255, 0.1);
+            animation: micPulse 1.2s infinite;
+        }
+
+        @keyframes micPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 8px 32px rgba(222, 53, 11, 0.5), 0 0 0 4px rgba(255, 255, 255, 0.1);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 12px 40px rgba(222, 53, 11, 0.7), 0 0 0 6px rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        .voice-btn.mic svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Send button */
+        .voice-btn.send {
+            width: 56px;
+            height: 56px;
+            background: var(--success);
+            box-shadow: 0 4px 16px rgba(54, 179, 126, 0.4);
+        }
+
+        .voice-btn.send:hover {
+            background: #2f9e6e;
+            transform: scale(1.05);
+        }
+
+        .voice-btn.send:disabled {
+            background: rgba(255, 255, 255, 0.15);
+            cursor: not-allowed;
+            box-shadow: none;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .voice-btn.send:disabled svg {
+            fill: rgba(255, 255, 255, 0.4);
+        }
+
+        .voice-btn.send svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Voice hint */
+        .voice-hint {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--text-tertiary);
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .header {
+                padding: 12px 16px;
+            }
+
+            .header-logo {
+                width: 36px;
+                height: 36px;
+            }
+
+            .header-title {
+                font-size: 0.95rem;
+            }
+
+            .header-subtitle {
+                font-size: 0.7rem;
+            }
+
+            .mode-toggle {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+
+            .mode-toggle span {
+                display: none;
+            }
+
+            .messages-wrapper {
+                padding: 12px;
+            }
+
+            .welcome-card {
+                padding: 16px;
+            }
+
+            .welcome-card h2 {
+                font-size: 1rem;
+            }
+
+            .message-bubble {
+                padding: 10px 14px;
+                font-size: 0.9rem;
+            }
+
+            .input-container {
+                padding: 12px;
+            }
+
+            .voice-controls {
+                gap: 20px;
+                padding-bottom: 32px;
+            }
+
+            .voice-btn.close,
+            .voice-btn.send {
+                width: 48px;
+                height: 48px;
+            }
+
+            .voice-btn.mic {
+                width: 72px;
+                height: 72px;
+            }
+
+            .voice-btn.mic svg {
+                width: 28px;
+                height: 28px;
+            }
+        }
+
+        /* ===== UTILITIES ===== */
+        .hidden {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-logo">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+            </div>
+            <div class="header-info">
+                <div class="header-title">Trợ lý ảo Pháp luật Thuế</div>
+                <div class="header-subtitle">
+                    <span class="status-dot"></span>
+                    <span>Đang hoạt động • Phục vụ 24/7</span>
+                </div>
+            </div>
+            <button class="mode-toggle" id="modeToggle">
+                <svg id="modeIcon" viewBox="0 0 24 24">
+                    <path
+                        d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V21c0 .55.45 1 1 1s1-.45 1-1v-3.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z" />
+                </svg>
+                <span>Giọng nói</span>
+            </button>
+        </header>
+
+        <!-- CHAT AREA -->
+        <div class="chat-container">
+            <div class="messages-wrapper" id="messagesWrapper">
+                <!-- Welcome Card -->
+                <div class="welcome-card">
+                    <h2>👋 Xin chào!</h2>
+                    <p>Tôi là trợ lý ảo thông minh, sẵn sàng giải đáp mọi thắc mắc về thuế và pháp luật liên quan. Bạn
+                        có thể hỏi tôi bằng văn bản hoặc giọng nói.</p>
+                    <div class="quick-topics">
+                        <button class="topic-chip" data-query="Thuế GTGT là gì?">Thuế GTGT</button>
+                        <button class="topic-chip" data-query="Thuế TNCN">Thuế TNCN</button>
+                        <button class="topic-chip" data-query="Hóa đơn điện tử">Hóa đơn điện tử</button>
+                        <button class="topic-chip" data-query="Giao dịch liên kết">Giao dịch liên kết</button>
+                        <button class="topic-chip" data-query="Thủ tục khai thuế">Thủ tục khai thuế</button>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div id="messagesList"></div>
+
+                <!-- Typing Indicator -->
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="avatar"
+                        style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white;">AI
+                    </div>
+                    <div>
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-container" id="inputContainer">
+                <div class="input-wrapper">
+                    <textarea class="chat-input" id="chatInput" placeholder="Nhập câu hỏi của bạn..."
+                        rows="1"></textarea>
+                    <div class="input-actions">
+                        <button class="icon-btn" id="clearBtn" title="Xóa">
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <button class="send-btn" id="sendBtn" title="Gửi">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- FULLSCREEN VOICE OVERLAY -->
+            <div class="voice-overlay" id="voiceOverlay">
+                <!-- Close button -->
+                <button class="voice-close-top" id="closeVoiceBtn" title="Đóng">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                    </svg>
+                </button>
+
+                <!-- Header -->
+                <div class="voice-header">
+                    <h3>🎙️ Chế độ giọng nói</h3>
+                    <p><span class="status-dot"></span> Đang lắng nghe</p>
+                </div>
+
+                <!-- Center Avatar Image -->
+                <img src="avt.jpg" alt="Trợ lý ảo" class="voice-main-avatar" id="mainAvatar">
+
+                <!-- Visualizer -->
+                <div class="voice-visualizer-container">
+                    <div class="voice-avatar-wrapper">
+                        <div class="voice-ring" id="ring1"></div>
+                        <div class="voice-ring" id="ring2"></div>
+                        <div class="voice-ring" id="ring3"></div>
+                        <div class="voice-center-icon" id="voiceAvatar">
+                            <svg viewBox="0 0 24 24" id="centerIcon">
+                                <path
+                                    d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="voice-status-container">
+                        <div class="voice-status" id="voiceStatus">Bấm mic để bắt đầu nói</div>
+                        <div class="voice-transcript" id="voiceTranscript"></div>
+                    </div>
+                </div>
+
+                <!-- Test API Button -->
+                <button class="voice-btn test-api" id="testApiBtn" title="Test Whisper API">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                </button>
+
+                <!-- Controls -->
+                <div class="voice-controls">
+                    <!-- Close button -->
+                    <button class="voice-btn close" id="closeVoiceBtnBottom" title="Đóng">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                        </svg>
+                    </button>
+
+                    <!-- Mic button -->
+                    <button class="voice-btn mic" id="micBtn" title="Bấm để nói / Dừng">
+                        <svg viewBox="0 0 24 24" id="micIcon">
+                            <path
+                                d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V21c0 .55.45 1 1 1s1-.45 1-1v-3.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z" />
+                        </svg>
+                    </button>
+
+                    <!-- Send button -->
+                    <button class="voice-btn send" id="sendVoiceBtn" title="Gửi tin nhắn" disabled>
+                        <svg viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONFIG =====
+        const BACKEND_DOMAIN = 'BACKEND_URL_PLACEHOLDER';
+
+        const API_BASE = BACKEND_DOMAIN;
+        const BACKEND_URL = API_BASE + '/api/query';
+        const CONVERSATION_URL = API_BASE + '/api/query/conversation';
+        const TTS_URL = API_BASE + '/api/tts';
+        const WHISPER_URL = API_BASE + '/api/whisper';
+        const VOICE_CHAT_URL = API_BASE + '/api/voice/chat';
+        const WAITING_AUDIO_URL = API_BASE + '/static/audio/waiting_response.wav';
+        const SILENCE_TIMEOUT_MS = 5000;
+
+        // ===== STATE =====
+        let currentMode = 'text';
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let silenceTimer = null;
+        let isRecording = false;
+        let isBotSpeaking = false;
+        let recordedText = '';
+        let conversationId = localStorage.getItem('chat_conversation_id') || null;
+        let audioContext = null;
+        let globalAudioPlayer = new Audio();
+
+        // ===== CONVERSATION MANAGEMENT =====
+        async function getOrCreateConversation() {
+            if (conversationId) {
+                return conversationId;
+            }
+            // Tạo conversation mới
+            try {
+                const response = await fetch(CONVERSATION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                conversationId = data.conversation_id;
+                localStorage.setItem('chat_conversation_id', conversationId);
+                console.log('Created new conversation:', conversationId);
+                return conversationId;
+            } catch (e) {
+                console.error('Failed to create conversation:', e);
+                return null;
+            }
+        }
+
+        function clearConversation() {
+            conversationId = null;
+            localStorage.removeItem('chat_conversation_id');
+            console.log('Conversation cleared');
+        }
+
+        // ===== DOM ELEMENTS =====
+        const elements = {
+            messagesWrapper: document.getElementById('messagesWrapper'),
+            messagesList: document.getElementById('messagesList'),
+            chatInput: document.getElementById('chatInput'),
+            sendBtn: document.getElementById('sendBtn'),
+            clearBtn: document.getElementById('clearBtn'),
+            typingIndicator: document.getElementById('typingIndicator'),
+            modeToggle: document.getElementById('modeToggle'),
+            modeIcon: document.getElementById('modeIcon'),
+            voiceOverlay: document.getElementById('voiceOverlay'),
+            voiceStatus: document.getElementById('voiceStatus'),
+            voiceTranscript: document.getElementById('voiceTranscript'),
+            micBtn: document.getElementById('micBtn'),
+            sendVoiceBtn: document.getElementById('sendVoiceBtn'),
+            closeVoiceBtn: document.getElementById('closeVoiceBtn'),
+            closeVoiceBtnBottom: document.getElementById('closeVoiceBtnBottom'),
+            testApiBtn: document.getElementById('testApiBtn'),
+            voiceAvatar: document.getElementById('voiceAvatar'),
+            centerIcon: document.getElementById('centerIcon'),
+            micIcon: document.getElementById('micIcon'),
+            rings: [document.getElementById('ring1'), document.getElementById('ring2'), document.getElementById('ring3')]
+        };
+
+        // ===== UTILITIES =====
+        function formatTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function scrollToBottom() {
+            elements.messagesWrapper.scrollTop = elements.messagesWrapper.scrollHeight;
+        }
+
+        function autoResizeTextarea() {
+            elements.chatInput.style.height = 'auto';
+            elements.chatInput.style.height = Math.min(elements.chatInput.scrollHeight, 120) + 'px';
+        }
+
+        // ===== MESSAGE FUNCTIONS =====
+        function appendMessage(text, sender, sources = []) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = sender === 'bot' ? 'AI' : 'Bạn';
+
+            const content = document.createElement('div');
+            content.className = 'message-content';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.innerHTML = text.replace(/\n/g, '<br>');
+
+            const time = document.createElement('div');
+            time.className = 'message-time';
+            time.textContent = formatTime();
+
+            content.appendChild(bubble);
+
+            if (sender === 'bot' && sources && sources.length > 0) {
+                const sourcesDiv = document.createElement('div');
+                sourcesDiv.className = 'sources';
+
+                const sourcesTitle = document.createElement('div');
+                sourcesTitle.className = 'sources-title';
+                sourcesTitle.innerHTML = '<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Tài liệu tham khảo';
+                sourcesDiv.appendChild(sourcesTitle);
+
+                const uniqueSources = [...new Set(sources.map(s => s.doc_title))];
+                uniqueSources.forEach(source => {
+                    const item = document.createElement('div');
+                    item.className = 'source-item';
+                    item.innerHTML = `<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> ${source}`;
+                    sourcesDiv.appendChild(item);
+                });
+
+                content.appendChild(sourcesDiv);
+            }
+
+            content.appendChild(time);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            elements.messagesList.appendChild(messageDiv);
+            scrollToBottom();
+
+            return messageDiv;
+        }
+
+        function showTyping() {
+            elements.typingIndicator.classList.add('active');
+            scrollToBottom();
+        }
+
+        function hideTyping() {
+            elements.typingIndicator.classList.remove('active');
+        }
+
+        // ===== API FUNCTIONS =====
+        async function sendMessage(text) {
+            if (!text.trim()) return;
+
+            appendMessage(text, 'user');
+            elements.chatInput.value = '';
+            elements.chatInput.style.height = 'auto';
+
+            showTyping();
+
+            // Đảm bảo có conversation_id
+            const convId = await getOrCreateConversation();
+
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: text,
+                        top_k: 5,
+                        conversation_id: convId
+                    })
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                hideTyping();
+                appendMessage(data.answer, 'bot', data.sources);
+
+            } catch (error) {
+                console.error('API Error:', error);
+                hideTyping();
+                appendMessage('Xin lỗi, tôi không thể kết nối với máy chủ. Vui lòng thử lại sau.', 'bot');
+
+                if (currentMode === 'voice') {
+                    elements.voiceStatus.textContent = '⚠️ Lỗi kết nối';
+                    stopVoiceAnimation();
+                }
+            }
+        }
+
+        // ===== VOICE FUNCTIONS =====
+        function enterVoiceMode() {
+            currentMode = 'voice';
+            elements.modeToggle.classList.add('voice-active');
+            elements.voiceOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+            elements.voiceStatus.textContent = 'Bấm mic để bắt đầu nói';
+            elements.voiceTranscript.textContent = '';
+            recordedText = '';
+            elements.sendVoiceBtn.disabled = true;
+        }
+
+        function exitVoiceMode() {
+            currentMode = 'text';
+            elements.modeToggle.classList.remove('voice-active');
+            elements.voiceOverlay.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+            stopRecording();
+            stopAudio();
+            recordedText = '';
+        }
+
+        function startVoiceAnimation() {
+            elements.rings.forEach(ring => ring.classList.add('animating'));
+        }
+
+        function stopVoiceAnimation() {
+            elements.rings.forEach(ring => ring.classList.remove('animating'));
+        }
+
+        function updateMicIcon(recording) {
+            if (recording) {
+                // Stop icon for mic button
+                elements.micIcon.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2"/>';
+                // Recording icon for center (square)
+                elements.centerIcon.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2"/>';
+            } else {
+                // Mic icon
+                elements.micIcon.innerHTML = '<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V21c0 .55.45 1 1 1s1-.45 1-1v-3.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>';
+                // Reset center icon to mic
+                elements.centerIcon.innerHTML = '<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>';
+            }
+        }
+
+        // Get supported MIME type
+        function getSupportedMimeType() {
+            const types = [
+                'audio/webm',
+                'audio/webm;codecs=opus',
+                'audio/mp4',
+                'audio/mp4;codecs=mp4a',
+                'audio/ogg',
+                'audio/ogg;codecs=opus'
+            ];
+            for (const type of types) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    console.log('Using MIME type:', type);
+                    return type;
+                }
+            }
+            return 'audio/webm'; // fallback
+        }
+
+        async function startRecording() {
+            if (isBotSpeaking) stopAudio();
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mimeType = getSupportedMimeType();
+
+                try {
+                    mediaRecorder = new MediaRecorder(stream, { mimeType });
+                } catch (e) {
+                    console.log('Failed with', mimeType, 'using default');
+                    mediaRecorder = new MediaRecorder(stream);
+                }
+
+                audioChunks = [];
+                recordedText = '';
+
+                mediaRecorder.ondataavailable = e => {
+                    if (e.data.size > 0) audioChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    stream.getTracks().forEach(t => t.stop());
+                };
+
+                mediaRecorder.start(100); // Collect data every 100ms
+                isRecording = true;
+                elements.micBtn.classList.add('recording');
+                elements.voiceAvatar.classList.add('recording');
+                startVoiceAnimation();
+                updateMicIcon(true);
+                elements.voiceStatus.textContent = '🎙️ Đang nghe...';
+                elements.voiceTranscript.textContent = '';
+                elements.sendVoiceBtn.disabled = true; // Disable nút gửi khi đang ghi âm
+                audioChunks = []; // Clear audio cũ
+                recordedText = '';
+
+                resetSilenceTimer();
+
+            } catch (err) {
+                console.error('Mic Error:', err);
+                elements.voiceStatus.textContent = '⚠️ Không thể truy cập micro';
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            isRecording = false;
+            elements.micBtn.classList.remove('recording');
+            elements.voiceAvatar.classList.remove('recording');
+            stopVoiceAnimation();
+            updateMicIcon(false);
+            clearTimeout(silenceTimer);
+
+            // Khi dừng ghi âm, chỉ enable nút gửi (không xử lý audio)
+            if (audioChunks.length > 0) {
+                elements.voiceStatus.textContent = '✅ Đã ghi âm. Bấm gửi để xử lý';
+                elements.voiceTranscript.textContent = audioChunks.length + ' chunks audio';
+                elements.sendVoiceBtn.disabled = false;
+            }
+        }
+
+        function resetSilenceTimer() {
+            // Auto stop sau 5s im lặng và tự động gửi
+            clearTimeout(silenceTimer);
+            silenceTimer = setTimeout(() => {
+                if (isRecording) {
+                    stopRecording();
+                    // Tự động gửi sau 500ms để đảm bảo audio đã xử lý xong
+                    elements.voiceStatus.textContent = '✅ Đã ghi âm. Tự động gửi sau 3s im lặng...';
+                    setTimeout(() => {
+                        if (audioChunks.length > 0 && !isRecording) {
+                            sendVoiceMessage();
+                        }
+                    }, 500);
+                }
+            }, SILENCE_TIMEOUT_MS);
+        }
+
+        // Convert Blob to WAV format
+        async function convertToWav(blob) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const arrayBuffer = await blob.arrayBuffer();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+            // Create WAV from audio buffer
+            const numberOfChannels = audioBuffer.numberOfChannels;
+            const sampleRate = audioBuffer.sampleRate;
+            const format = 1; // PCM
+            const bitDepth = 16;
+
+            const bytesPerSample = bitDepth / 8;
+            const blockAlign = numberOfChannels * bytesPerSample;
+
+            const wavBuffer = audioBuffer.getChannelData(0);
+            const samples = wavBuffer.length;
+            const dataLength = samples * numberOfChannels * bytesPerSample;
+            const buffer = new ArrayBuffer(44 + dataLength);
+            const view = new DataView(buffer);
+
+            // Write WAV header
+            const writeString = (view, offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataLength, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, format, true);
+            view.setUint16(22, numberOfChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * blockAlign, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitDepth, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataLength, true);
+
+            // Write audio data
+            const offset = 44;
+            for (let i = 0; i < samples; i++) {
+                const sample = Math.max(-1, Math.min(1, wavBuffer[i]));
+                view.setInt16(offset + i * 2, sample * 0x7FFF, true);
+            }
+
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        async function processAudio() {
+            if (audioChunks.length === 0) {
+                elements.voiceStatus.textContent = '⚠️ Không có dữ liệu audio';
+                return;
+            }
+
+            elements.voiceStatus.textContent = '⏳ Đang xử lý...';
+            elements.voiceTranscript.textContent = 'Đang chuyển đổi audio...';
+
+            const mimeType = mediaRecorder ? mediaRecorder.mimeType : 'audio/webm';
+            const blob = new Blob(audioChunks, { type: mimeType });
+
+            console.log('Audio blob size:', blob.size, 'type:', mimeType);
+
+            if (blob.size < 1000) {
+                elements.voiceStatus.textContent = '⚠️ File audio quá nhỏ';
+                return;
+            }
+
+            // Convert to WAV
+            let wavBlob;
+            try {
+                wavBlob = await convertToWav(blob);
+                console.log('WAV blob size:', wavBlob.size);
+                elements.voiceTranscript.textContent = 'Đang gửi nhận dạng...';
+            } catch (convErr) {
+                console.error('Conversion error:', convErr);
+                elements.voiceStatus.textContent = '⚠️ Lỗi chuyển đổi, thử gửi gốc...';
+                wavBlob = blob; // Fallback to original
+            }
+
+            const formData = new FormData();
+            formData.append('file', wavBlob, 'audio.wav');
+            formData.append('language', 'vi');
+            formData.append('task', 'transcribe');
+
+            try {
+                console.log('Sending to:', WHISPER_URL);
+                console.log('Audio size:', blob.size, 'bytes');
+
+                const response = await fetch(WHISPER_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                console.log('Response status:', response.status);
+                const responseText = await response.text();
+                console.log('Response text:', responseText);
+
+                if (!response.ok) {
+                    elements.voiceStatus.textContent = '❌ API Lỗi ' + response.status;
+                    elements.voiceTranscript.textContent = responseText.substring(0, 200);
+                    recordedText = '';
+                    elements.sendVoiceBtn.disabled = true;
+                    return;
+                }
+
+                const data = JSON.parse(responseText);
+                console.log('Response data:', data);
+
+                const text = data.text || '';
+
+                if (!text.trim()) {
+                    elements.voiceStatus.textContent = 'Không nghe rõ, hãy thử lại';
+                    elements.voiceTranscript.textContent = 'Response: ' + JSON.stringify(data);
+                    recordedText = '';
+                    elements.sendVoiceBtn.disabled = true;
+                    return;
+                }
+
+                recordedText = text;
+                elements.voiceTranscript.textContent = '"' + text + '"';
+                elements.voiceStatus.textContent = '✅ Đã nhận dạng (' + (data.process_time || '?') + 's)';
+                elements.sendVoiceBtn.disabled = false;
+
+            } catch (err) {
+                console.error('Whisper Error:', err);
+                elements.voiceStatus.textContent = '⚠️ Lỗi: ' + err.message;
+                recordedText = '';
+                elements.sendVoiceBtn.disabled = true;
+            }
+        }
+
+        async function sendVoiceMessage() {
+            // Gửi audio blob đến backend xử lý toàn bộ pipeline
+            if (audioChunks.length === 0) {
+                elements.voiceStatus.textContent = '⚠️ Không có audio để gửi';
+                return;
+            }
+
+            elements.voiceStatus.textContent = '📤 Đang gửi audio...';
+            elements.voiceTranscript.textContent = 'Backend sẽ xử lý: Whisper → Bot → TTS';
+            startVoiceAnimation();
+            elements.sendVoiceBtn.disabled = true;
+
+            // Bắt đầu đếm thờ gian
+            const startTime = Date.now();
+            let timerInterval = setInterval(() => {
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                elements.voiceStatus.textContent = '⏳ Đang xử lý... (' + elapsed + 's)';
+            }, 100);
+
+            try {
+                // ===== PHÁT WAITING AUDIO + GỌI BACKEND SONG SONG =====
+                elements.voiceStatus.textContent = '🔊 Em đã nghe, đang kiểm tra...';
+
+                // Bắt đầu phát waiting audio (không await, để nó chạy song song)
+                const waitingAudioPromise = playWaitingAudio();
+
+                // ===== CHUẨN BỊ VÀ GỌI BACKEND =====
+                // Tạo blob audio
+                const mimeType = mediaRecorder ? mediaRecorder.mimeType : 'audio/webm';
+                const blob = new Blob(audioChunks, { type: mimeType });
+
+                // Chuyển sang WAV
+                let wavBlob;
+                try {
+                    wavBlob = await convertToWav(blob);
+                } catch (e) {
+                    console.log('WAV conversion failed, using original:', e);
+                    wavBlob = blob;
+                }
+
+                // Đảm bảo có conversation_id cho voice mode
+                const voiceConvId = await getOrCreateConversation();
+
+                const formData = new FormData();
+                formData.append('file', wavBlob, 'audio.wav');
+                formData.append('language', 'vi');
+                formData.append('voice', 'Doan');
+                if (voiceConvId) {
+                    formData.append('conversation_id', voiceConvId);
+                }
+
+                elements.voiceTranscript.textContent = '1/4 Whisper → 2/4 Bot → 3/4 TTS → 4/4 Phát';
+
+                // Gọi backend API (chạy song song với waiting audio)
+                const backendPromise = fetch(VOICE_CHAT_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                // Chờ CẢ HAI hoàn thành
+                const [_, response] = await Promise.all([waitingAudioPromise, backendPromise]);
+
+                // Dừng đếm thờ gian
+                clearInterval(timerInterval);
+                const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Lỗi xử lý');
+                }
+
+                const data = await response.json();
+                console.log('Voice chat result:', data);
+
+                // Hiển thị kết quả với thờ gian
+                elements.voiceStatus.textContent = '✅ ' + totalTime + 's | "' + data.transcribed_text + '"';
+                elements.voiceTranscript.textContent = 'Bot: ' + data.answer_plain.substring(0, 50) + '...';
+
+                // Thêm tin nhắn vào chat
+                appendMessage(data.transcribed_text, 'user');
+                appendMessage(data.answer_text, 'bot', data.sources);
+
+                // Phát audio trả lởi (nếu có)
+                if (data.audio_base64) {
+                    elements.voiceStatus.textContent = '🔊 Đang phát... (' + totalTime + 's)';
+                    await playBase64Audio(data.audio_base64);
+                    elements.voiceStatus.textContent = '✅ ' + totalTime + 's | Hoàn thành!';
+                } else if (data.tts_error) {
+                    elements.voiceStatus.textContent = '⚠️ ' + totalTime + 's | TTS tạm lỗi, xem text ở dưới';
+                } else {
+                    elements.voiceStatus.textContent = '✅ ' + totalTime + 's | Hoàn thành!';
+                }
+
+                // Reset
+                recordedText = '';
+                elements.sendVoiceBtn.disabled = true;
+                elements.voiceTranscript.textContent = '';
+                audioChunks = [];
+
+            } catch (err) {
+                // Dừng đếm thờ gian khi lỗi
+                clearInterval(timerInterval);
+                const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+
+                console.error('Voice chat error:', err);
+                elements.voiceStatus.textContent = '❌ ' + totalTime + 's | Lỗi: ' + err.message;
+                elements.voiceTranscript.textContent = 'Vui lòng thử lại';
+                elements.sendVoiceBtn.disabled = false;
+            }
+        }
+
+        async function playBase64Audio(base64) {
+            return new Promise((resolve) => {
+                // Unlock audio for mobile
+                unlockAudio();
+
+                globalAudioPlayer.src = 'data:audio/wav;base64,' + base64;
+                globalAudioPlayer.volume = 1.0;
+
+                elements.voiceAvatar.classList.add('speaking');
+                startVoiceAnimation();
+
+                globalAudioPlayer.onended = () => {
+                    stopVoiceAnimation();
+                    elements.voiceAvatar.classList.remove('speaking');
+                    resolve();
+                };
+
+                globalAudioPlayer.onerror = (e) => {
+                    stopVoiceAnimation();
+                    elements.voiceAvatar.classList.remove('speaking');
+                    console.error('Audio playback error:', e);
+                    resolve();
+                };
+
+                const playPromise = globalAudioPlayer.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch((e) => {
+                        console.error('Audio play failed (mobile):', e);
+                        stopVoiceAnimation();
+                        elements.voiceAvatar.classList.remove('speaking');
+                        elements.voiceStatus.textContent = '🔊 Xem câu trả lời ở dưới';
+                        resolve();
+                    });
+                }
+            });
+        }
+
+        function unlockAudio() {
+            // Create audio context on user interaction (required for mobile)
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            // "Mồi" Audio Player bằng một đoạn silence cực ngắn (chỉ cần chạy 1 lần)
+            if (globalAudioPlayer.paused && !globalAudioPlayer.src) {
+                globalAudioPlayer.src = 'data:audio/wav;base64,UklGRigAAABXQVZFRm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAA+v/6P8=';
+                globalAudioPlayer.play().catch(() => { });
+            }
+        }
+
+        async function playWaitingAudio() {
+            // Phát file audio waiting response (Em đã nghe, chờ kiểm tra)
+            return new Promise((resolve) => {
+                // Unlock audio first (required for mobile)
+                unlockAudio();
+
+                globalAudioPlayer.src = WAITING_AUDIO_URL;
+                globalAudioPlayer.volume = 1.0;
+
+                elements.voiceAvatar.classList.add('speaking');
+                startVoiceAnimation();
+
+                globalAudioPlayer.onended = () => {
+                    stopVoiceAnimation();
+                    elements.voiceAvatar.classList.remove('speaking');
+                    resolve();
+                };
+
+                globalAudioPlayer.onerror = (e) => {
+                    stopVoiceAnimation();
+                    elements.voiceAvatar.classList.remove('speaking');
+                    console.log('Waiting audio error (might be missing file):', e);
+                    resolve(); // Không reject, vẫn tiếp tục xử lý
+                };
+
+                // Play with user gesture requirement handling
+                const playPromise = globalAudioPlayer.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch((e) => {
+                        console.log('Waiting audio play failed (mobile blocked):', e);
+                        stopVoiceAnimation();
+                        elements.voiceAvatar.classList.remove('speaking');
+                        resolve();
+                    });
+                }
+            });
+        }
+
+        async function playTTS(text) {
+            stopAudio();
+            isBotSpeaking = true;
+            elements.voiceStatus.textContent = '🔊 Đang trả lời...';
+            elements.voiceAvatar.classList.add('speaking');
+            // Show speaker icon in center
+            elements.centerIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+            startVoiceAnimation();
+
+            try {
+                const response = await fetch(TTS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, voice: 'Doan' })
+                });
+
+                if (!response.ok) throw new Error('TTS failed');
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                unlockAudio();
+                globalAudioPlayer.src = url;
+                globalAudioPlayer.volume = 1.0;
+
+                globalAudioPlayer.onended = () => {
+                    isBotSpeaking = false;
+                    stopVoiceAnimation();
+                    elements.voiceAvatar.classList.remove('speaking');
+                    elements.centerIcon.innerHTML = '<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>';
+                    elements.voiceStatus.textContent = 'Bấm mic để tiếp tục';
+                    recordedText = '';
+                    elements.sendVoiceBtn.disabled = true;
+                    elements.voiceTranscript.textContent = '';
+                    URL.revokeObjectURL(url);
+                };
+
+                globalAudioPlayer.onerror = () => {
+                    isBotSpeaking = false;
+                    stopVoiceAnimation();
+                    elements.voiceAvatar.classList.remove('speaking');
+                    elements.centerIcon.innerHTML = '<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>';
+                    elements.voiceStatus.textContent = 'Lỗi phát âm thanh';
+                    URL.revokeObjectURL(url);
+                };
+
+                await globalAudioPlayer.play();
+
+            } catch (err) {
+                console.error('TTS Error:', err);
+                isBotSpeaking = false;
+                stopVoiceAnimation();
+                elements.voiceAvatar.classList.remove('speaking');
+                elements.centerIcon.innerHTML = '<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>';
+                elements.voiceStatus.textContent = 'Không thể phát giọng nói';
+            }
+        }
+
+        function stopAudio() {
+            if (globalAudioPlayer) {
+                globalAudioPlayer.pause();
+                // Chúng ta không gán null vì đây là global player
+            }
+            isBotSpeaking = false;
+            stopVoiceAnimation();
+            elements.voiceAvatar.classList.remove('speaking');
+            // Reset center icon to mic
+            if (elements.centerIcon) {
+                elements.centerIcon.innerHTML = '<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>';
+            }
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Send button
+        elements.sendBtn.addEventListener('click', () => {
+            sendMessage(elements.chatInput.value);
+        });
+
+        // Enter key
+        elements.chatInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage(elements.chatInput.value);
+            }
+        });
+
+        // Auto resize textarea
+        elements.chatInput.addEventListener('input', autoResizeTextarea);
+
+        // Clear button
+        elements.clearBtn.addEventListener('click', () => {
+            elements.chatInput.value = '';
+            elements.chatInput.style.height = 'auto';
+            elements.chatInput.focus();
+        });
+
+        // Mode toggle
+        elements.modeToggle.addEventListener('click', () => {
+            if (currentMode === 'text') {
+                enterVoiceMode();
+            } else {
+                exitVoiceMode();
+            }
+        });
+
+        // Close voice (both buttons)
+        elements.closeVoiceBtn.addEventListener('click', exitVoiceMode);
+        elements.closeVoiceBtnBottom.addEventListener('click', exitVoiceMode);
+
+        // Unlock audio on first user interaction (required for mobile)
+        document.addEventListener('click', unlockAudio, { once: true });
+        document.addEventListener('touchstart', unlockAudio, { once: true });
+
+        // Mic button - toggle recording
+        elements.micBtn.addEventListener('click', () => {
+            unlockAudio(); // Ensure audio is unlocked
+            if (isRecording) {
+                // Dừng ghi âm, nhưng KHÔNG xử lý ngay - để user bấm gửi
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        });
+
+        // Send voice button
+        elements.sendVoiceBtn.addEventListener('click', () => {
+            unlockAudio(); // Ensure audio is unlocked before playing
+            sendVoiceMessage();
+        });
+
+        // Test API button
+        elements.testApiBtn.addEventListener('click', testWhisperAPI);
+
+        // Quick topic chips
+        document.querySelectorAll('.topic-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                sendMessage(chip.dataset.query);
+            });
+        });
+
+        // Initial focus
+        elements.chatInput.focus();
+
+        // ===== TEST WHISPER API FUNCTION =====
+        async function testWhisperAPI() {
+            const btn = elements.testApiBtn;
+            const DIRECT_WHISPER_URL = 'https://whisper.dukyai.com/api/transcribe';
+
+            // Reset classes
+            btn.classList.remove('success', 'error');
+            btn.classList.add('testing');
+            elements.voiceStatus.textContent = '🔄 Đang test API...';
+            elements.voiceTranscript.textContent = 'Test 1/2: Qua proxy ' + WHISPER_URL;
+
+            // Test 1: Qua proxy
+            try {
+                // Create a small valid audio blob (1 second of silence-like data)
+                const testBlob = new Blob([new Uint8Array(1000).fill(0)], { type: 'audio/webm' });
+                const formData = new FormData();
+                formData.append('file', testBlob, 'test.webm');
+                formData.append('language', 'vi');
+                formData.append('task', 'transcribe');
+
+                const startTime = Date.now();
+                const response = await fetch(WHISPER_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                const latency = Date.now() - startTime;
+                const responseText = await response.text();
+
+                console.log('Proxy Test:', response.status, responseText);
+
+                if (response.ok) {
+                    const data = JSON.parse(responseText);
+                    btn.classList.remove('testing');
+                    btn.classList.add('success');
+                    elements.voiceStatus.textContent = '✅ Proxy OK! (' + latency + 'ms)';
+                    elements.voiceTranscript.textContent = 'Proxy hoạt động tốt';
+                    setTimeout(() => btn.classList.remove('success'), 5000);
+                    return;
+                } else {
+                    elements.voiceTranscript.textContent = 'Proxy lỗi ' + response.status + '. Test trực tiếp...';
+                }
+            } catch (error) {
+                elements.voiceTranscript.textContent = 'Proxy lỗi: ' + error.message + '. Test trực tiếp...';
+            }
+
+            // Test 2: Trực tiếp
+            elements.voiceStatus.textContent = '🔄 Test trực tiếp...';
+            elements.voiceTranscript.textContent = 'Test 2/2: Trực tiếp ' + DIRECT_WHISPER_URL;
+
+            try {
+                const testBlob = new Blob([new Uint8Array(1000).fill(0)], { type: 'audio/webm' });
+                const formData = new FormData();
+                formData.append('file', testBlob, 'test.webm');
+                formData.append('language', 'vi');
+                formData.append('task', 'transcribe');
+
+                const startTime = Date.now();
+                const response = await fetch(DIRECT_WHISPER_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                const latency = Date.now() - startTime;
+                const responseText = await response.text();
+
+                console.log('Direct Test:', response.status, responseText);
+
+                btn.classList.remove('testing');
+
+                if (response.ok) {
+                    btn.classList.add('success');
+                    elements.voiceStatus.textContent = '✅ Direct OK! (' + latency + 'ms)';
+                    elements.voiceTranscript.textContent = 'API gốc hoạt động! Proxy bị lỗi';
+                } else {
+                    btn.classList.add('error');
+                    elements.voiceStatus.textContent = '❌ API gốc lỗi ' + response.status;
+                    elements.voiceTranscript.textContent = responseText.substring(0, 150);
+                }
+            } catch (error) {
+                btn.classList.remove('testing');
+                btn.classList.add('error');
+
+                if (error.message.includes('CORS')) {
+                    elements.voiceStatus.textContent = '⚠️ Lỗi CORS';
+                    elements.voiceTranscript.textContent = 'Cần dùng proxy. Kiểm tra backend log';
+                } else {
+                    elements.voiceStatus.textContent = '❌ API gốc lỗi';
+                    elements.voiceTranscript.textContent = error.message;
+                }
+                console.error('Direct Test Error:', error);
+            }
+
+            setTimeout(() => btn.classList.remove('success', 'error'), 8000);
+        }
+
+        // Keyboard shortcut for voice mode (Escape to close)
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && currentMode === 'voice') {
+                exitVoiceMode();
+            }
+        });
+    </script>
+</body>
+
+</html>
