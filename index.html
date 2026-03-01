@@ -1281,16 +1281,7 @@
 
     <script>
         // ===== CONFIG =====
-        // Placeholder này sẽ được thay thế bởi sed khi container khởi động
-        const CONFIG_BACKEND_URL = 'BACKEND_URL_PLACEHOLDER';
-
-        // Logic kiểm tra: Nếu là placeholder hoặc bị lỗi nối chuỗi literal, sử dụng origin thực tế
-        const BACKEND_DOMAIN = (CONFIG_BACKEND_URL === 'BACKEND_URL_PLACEHOLDER' ||
-            CONFIG_BACKEND_URL === 'window.location.origin' ||
-            !CONFIG_BACKEND_URL ||
-            CONFIG_BACKEND_URL.includes('window.location.origin'))
-            ? window.location.origin
-            : CONFIG_BACKEND_URL;
+        const BACKEND_DOMAIN = 'https://api-gov.dukyai.com';
 
         const API_BASE = BACKEND_DOMAIN.endsWith('/') ? BACKEND_DOMAIN.slice(0, -1) : BACKEND_DOMAIN;
         const BACKEND_URL = API_BASE + '/api/query';
